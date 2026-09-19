@@ -10,7 +10,7 @@ export function App() {
 
   return (
     <>
-      {INJECTED?.clipName}
+      <p className="text-red-500">{INJECTED?.clipName}</p>
       <button className="menu-button primary" onClick={onApply}>
         Apply
       </button>
