@@ -254,6 +254,16 @@ function activate(activation: ActivationContext) {
 
       let html = template;
       html = inject(html, '"__CLIP_NAME__"', jsonEsc(clip.name));
+      html = inject(
+        html,
+        '"__CLIP_DURATION__"',
+        jsonEsc(String(clip.duration)),
+      );
+      html = inject(
+        html,
+        '"__NOTE_START_TIMES__"',
+        jsonEsc(JSON.stringify(clip.notes.map((note) => note.startTime))),
+      );
 
       // Serve the dialog over http://localhost so the webview accepts ES modules etc
 
@@ -299,11 +309,7 @@ function activate(activation: ActivationContext) {
     }
   });
 
-  context.ui.registerContextMenuAction(
-    "MidiClip",
-    "Open",
-    "pinch.process",
-  );
+  context.ui.registerContextMenuAction("MidiClip", "Open", "pinch.process");
 }
 
 module.exports = { activate };
