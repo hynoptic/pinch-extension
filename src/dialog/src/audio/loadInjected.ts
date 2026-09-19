@@ -1,5 +1,4 @@
-import type { AudioSource } from '../types';
-import { getAudioContext } from './playback';
+
 
 interface InitialData {
   audioBase64: string;
@@ -58,31 +57,3 @@ export function getLogUrl(): string | null {
   return getInjectedData()?.logUrl ?? null;
 }
 
-function base64ToArrayBuffer(b64: string): ArrayBuffer {
-  const bin = atob(b64);
-  const len = bin.length;
-  const out = new Uint8Array(len);
-  for (let i = 0; i < len; i++) out[i] = bin.charCodeAt(i);
-  return out.buffer;
-}
-
-export async function loadInjectedAudio(
-  data: InitialData,
-  context: AudioContext = getAudioContext(data.sampleRate),
-): Promise<AudioSource> {
-  const arrayBuffer = base64ToArrayBuffer(data.audioBase64);
-  const audioBuffer = await context.decodeAudioData(arrayBuffer.slice(0));
-
-  const channels: Float32Array[] = [];
-  const channelCount = Math.min(audioBuffer.numberOfChannels, 2);
-  for (let c = 0; c < channelCount; c++) {
-    channels.push(new Float32Array(audioBuffer.getChannelData(c)));
-  }
-
-  return {
-    name: data.clipName,
-    sampleRate: audioBuffer.sampleRate,
-    durationSec: audioBuffer.duration,
-    channels,
-  };
-}
