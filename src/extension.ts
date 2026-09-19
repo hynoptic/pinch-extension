@@ -10,8 +10,12 @@ import {
   type ActivationContext,
 } from "@ableton-extensions/sdk";
 
+
+import { transformStartTime } from "./dialog/src/lib/transforms";
+
 interface DialogResult {
-  sampleRate: number;
+  origin: number;
+  amount: number;
 }
 
 // Lazily resolved once — the dialog tree sits alongside dist/extension.js in
@@ -46,8 +50,6 @@ interface DialogServer {
 }
 
 // Bridge from the WebView dialog → Node console.* → ExtensionHost.txt.
-// Edge WebView2 / WebKit don't expose devtools inside Live, so without this
-// bridge any error in the dialog is effectively invisible.
 function logFromDialog(level: string, parts: string[]): void {
   const msg = `[dialog ${level}] ${parts.join(" ")}`;
   if (level === "error") console.error(msg);
@@ -55,13 +57,7 @@ function logFromDialog(level: string, parts: string[]): void {
   else console.log(msg);
 }
 
-// Tiny localhost HTTP server that serves the Vite-built dialog tree with the
-// COOP/COEP headers SharedArrayBuffer requires. Ableton's webview blocks ES
-// modules and AudioWorklet from file:// origins, so we serve over http://
-// instead. The same server also accepts a single POST to
-// `/result/<token>` that streams the rendered WAV directly to disk — this
-// avoids shuttling a multi-hundred-MB base64 blob through the host IPC
-// bridge when the dialog finishes rendering.
+// Tiny localhost HTTP server that serves the Vite-built dialog tree
 function startDialogServer(
   dialogDir: string,
   // sink: ResultSink,
@@ -109,32 +105,6 @@ function startDialogServer(
         });
         return;
       }
-
-      // if (req.method === "POST" && rawPath === `/result/${sink.token}`) {
-      //   if (resultConsumed) {
-      //     res.writeHead(409);
-      //     res.end("already consumed");
-      //     return;
-      //   }
-      //   resultConsumed = true;
-      //   const ws = fsSync.createWriteStream(sink.outPath);
-      //   const cleanup = (err: Error) => {
-      //     ws.destroy();
-      //     void safeUnlink(sink.outPath);
-      //     if (!res.headersSent) {
-      //       res.writeHead(500);
-      //       res.end(String(err.message ?? err));
-      //     }
-      //   };
-      //   req.on("error", cleanup);
-      //   ws.on("error", cleanup);
-      //   ws.on("finish", () => {
-      //     res.writeHead(204);
-      //     res.end();
-      //   });
-      //   req.pipe(ws);
-      //   return;
-      // }
 
       if (req.method !== "GET" && req.method !== "HEAD") {
         res.writeHead(405);
@@ -290,7 +260,22 @@ function activate(activation: ActivationContext) {
       }
 
       // should now have a successfully parsed JSON result in 'result'
-      console.log(`***** with`, result, JSON.stringify(result), `\n`);
+
+      const origin = result.origin;
+      const amount = result.amount;
+
+      const transform = clip.notes.map((note) => {
+        return {
+          ...note,
+          startTime: transformStartTime(
+            note.startTime,
+            clip.duration,
+            origin,
+            amount,
+          ),
+        };
+      });
+      clip.notes = transform;
     } catch (err) {
       console.error("[pinch] command failed:", err);
       const message =

@@ -46,7 +46,7 @@ export function App() {
     ></span>
   ));
 
-  const clip = (
+  const renderNotes = (
     <div
       className="relative bg-slate-200"
       style={{ width: `${400}px`, height: "64px" }}
@@ -60,19 +60,19 @@ export function App() {
   );
 
   const onApply = () => {
-    closeWithResult({ sampleRate: "44100", someParam: "baz" });
+    closeWithResult({ origin: origin, amount: amount })
   };
 
   return (
     <Card /*ref={parentRef}*/ className="m-8 shadow-xl">
       <CardHeader>
         <CardTitle>
-          Pinch {clipName}/{clipDuration}/{noteStartTimes}
+          Pinch '{clipName}'
         </CardTitle>
         <CardDescription>Ableton Extensions SDK example</CardDescription>
       </CardHeader>
       <CardContent>
-        <div>{clip}</div>
+        <div>{renderNotes}</div>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 items-start">
         <p className="opacity-70">Origin: {origin}% of clip length</p>
@@ -102,11 +102,7 @@ export function App() {
           <Button
             size="sm"
             className="bg-slate-600"
-            onClick={() =>
-              closeWithResult(
-                JSON.stringify({ origin: origin, amount: amount }),
-              )
-            }
+            onClick={onApply}
           >
             Transform
           </Button>
@@ -114,13 +110,5 @@ export function App() {
         </div>
       </CardFooter>
     </Card>
-  );
-  return (
-    <>
-      <p className="text-red-500">{INJECTED?.clipName}</p>
-      <button className="menu-button primary" onClick={onApply}>
-        Apply
-      </button>
-    </>
   );
 }
