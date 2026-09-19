@@ -38,7 +38,7 @@ export default defineConfig({
     format: 'es',
   },
   optimizeDeps: {
-    exclude: ['@olilarkin/paulstretch-wasm'],
+    exclude: [''],
   },
   server: {
     headers: coopCoepHeaders,

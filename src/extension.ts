@@ -301,7 +301,7 @@ function activate(activation: ActivationContext) {
 
   context.ui.registerContextMenuAction(
     "MidiClip",
-    "Open Pinch",
+    "Open",
     "pinch.process",
   );
 }
