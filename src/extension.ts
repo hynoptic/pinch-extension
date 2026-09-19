@@ -5,6 +5,8 @@ import * as http from "http";
 import { AddressInfo } from "net";
 import {
   initialize,
+  MidiClip,
+  Handle,
   type ActivationContext,
 } from "@ableton-extensions/sdk";
 
@@ -36,11 +38,6 @@ const MIME_TYPES: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".map": "application/json; charset=utf-8",
 };
-
-interface ResultSink {
-  token: string;
-  outPath: string;
-}
 
 interface DialogServer {
   url: string;
@@ -243,8 +240,11 @@ function activate(activation: ActivationContext) {
 
   context.commands.registerCommand(
     "paulstretch.process",
-    async (arg: unknown) => {
+    async (handle) => {
       try {
+
+        const clip = context.getObjectFromHandle(handle as Handle, MidiClip);
+
         // 1. Patch the index.html template with the per-invocation data.
         const { html: template, dir: dialogDir } = getDialogTemplate();
         const inject = (hay: string, needle: string, value: string) =>
@@ -260,15 +260,10 @@ function activate(activation: ActivationContext) {
             .replace(/\u2029/g, "\\u2029");
 
         let html = template;
-        html = inject(html, '"__<param>__"', jsonEsc("<param>"));
+        html = inject(html, '"__CLIP_NAME__"', jsonEsc(clip.name));
 
         // Serve the dialog over http://localhost so the webview accepts ES modules etc
-        // const server = await startDialogServer(dialogDir, {
-        //   // token: uploadToken,
-        //   // outPath: outWavPath,
-        //   token: "",
-        //   outPath: "",
-        // });
+ 
         const server = await startDialogServer(dialogDir);
         server.setIndexHtml(html);
 
@@ -293,35 +288,6 @@ function activate(activation: ActivationContext) {
 
         // should now have a successfully parsed JSON result in 'result'
         console.log(`***** with`, result, JSON.stringify(result), `\n`);
-
-        // Wrap each SDK call so we can attribute which one rejects (the SDK
-        // sometimes rejects with literal `undefined`, which is otherwise
-        // impossible to diagnose).
-
-        // eg
-        // await step("clearClipsInRange", () =>
-        //   track.clearClipsInRange(selectionStart, selectionEnd),
-        // );
-
-        // const step = async <T>(
-        //   label: string,
-        //   fn: () => Promise<T>,
-        // ): Promise<T> => {
-        //   console.log(`[paulstretch] step: ${label}`);
-        //   try {
-        //     return await fn();
-        //   } catch (e) {
-        //     const detail =
-        //       e === undefined
-        //         ? "<undefined>"
-        //         : e instanceof Error
-        //           ? `${e.message}\n${e.stack ?? ""}`
-        //           : typeof e === "object"
-        //             ? JSON.stringify(e)
-        //             : String(e);
-        //     throw new Error(`step "${label}" failed: ${detail}`);
-        //   }
-        // };
 
       } catch (err) {
         console.error("[paulstretch] command failed:", err);

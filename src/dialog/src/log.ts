@@ -5,7 +5,7 @@
 // is stuck — only that it's stuck. Import this module *first* in main.tsx so
 // failures during React mount itself are captured.
 
-import { getLogUrl } from './audio/loadInjected';
+import { getLogUrl } from './utils/loadInjected';
 
 const LOG_URL = getLogUrl();
 
