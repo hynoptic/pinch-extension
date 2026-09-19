@@ -41,8 +41,6 @@ const MIME_TYPES: Record<string, string> = {
 
 interface DialogServer {
   url: string;
-  // uploadUrl: string;
-  logUrl: string;
   setIndexHtml: (html: string) => void;
   close: () => Promise<void>;
 }
@@ -186,8 +184,6 @@ function startDialogServer(
       const url = `http://127.0.0.1:${addr.port}/`;
       resolve({
         url,
-        // uploadUrl: `${url}result/${sink.token}`,
-        logUrl: `${url}log`,
         setIndexHtml: (html: string) => {
           indexHtml = html;
         },

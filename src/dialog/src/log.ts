@@ -5,10 +5,6 @@
 // is stuck — only that it's stuck. Import this module *first* in main.tsx so
 // failures during React mount itself are captured.
 
-import { getLogUrl } from './utils/loadInjected';
-
-const LOG_URL = getLogUrl();
-
 function safeStringify(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value === undefined) return 'undefined';
@@ -22,13 +18,12 @@ function safeStringify(value: unknown): string {
 }
 
 function post(level: string, parts: unknown[]): void {
-  if (!LOG_URL) return;
   const payload = JSON.stringify({
     level,
     parts: parts.map(safeStringify),
   });
   try {
-    fetch(LOG_URL, {
+    fetch("", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: payload,
@@ -80,8 +75,8 @@ function logEnvironment(): void {
   ]);
 }
 
-if (LOG_URL) {
+// if (LOG_URL) {
   installConsoleBridge();
   installErrorHandlers();
   logEnvironment();
-}
+// }
