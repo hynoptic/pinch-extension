@@ -98,7 +98,7 @@ function startDialogServer(
               : [];
             logFromDialog(level, parts);
           } catch (e) {
-            console.warn("[paulstretch] malformed /log payload:", e);
+            console.warn("[pinch] malformed /log payload:", e);
           }
           res.writeHead(204);
           res.end();
@@ -219,7 +219,7 @@ p { font-size: 14px; margin: 0; line-height: 1.4; }
 </head>
 <body>
   <div class="card">
-    <h1>Paulstretch For Live</h1>
+    <h1>Pinch</h1>
     <p>${message.replace(/</g, "&lt;")}</p>
   </div>
 </body>
@@ -234,83 +234,75 @@ p { font-size: 14px; margin: 0; line-height: 1.4; }
 function activate(activation: ActivationContext) {
   const context = initialize(activation, "1.0.0");
 
-  context.commands.registerCommand(
-    "paulstretch.process",
-    async (handle) => {
+  context.commands.registerCommand("pinch.process", async (handle) => {
+    try {
+      const clip = context.getObjectFromHandle(handle as Handle, MidiClip);
+
+      // 1. Patch the index.html template with the per-invocation data.
+      const { html: template, dir: dialogDir } = getDialogTemplate();
+      const inject = (hay: string, needle: string, value: string) =>
+        hay.replace(needle, () => value);
+
+      // jsonEsc: produces a JS string literal safe to drop into an inline
+      // <script>. `JSON.stringify` doesn't escape `</script>` or U+2028/2029
+      // line separators, so we patch those manually.
+      const jsonEsc = (s: string) =>
+        JSON.stringify(s)
+          .replace(/<\//g, "<\\/")
+          .replace(/\u2028/g, "\\u2028")
+          .replace(/\u2029/g, "\\u2029");
+
+      let html = template;
+      html = inject(html, '"__CLIP_NAME__"', jsonEsc(clip.name));
+
+      // Serve the dialog over http://localhost so the webview accepts ES modules etc
+
+      const server = await startDialogServer(dialogDir);
+      server.setIndexHtml(html);
+
+      let resultJson: string;
       try {
-
-        const clip = context.getObjectFromHandle(handle as Handle, MidiClip);
-
-        // 1. Patch the index.html template with the per-invocation data.
-        const { html: template, dir: dialogDir } = getDialogTemplate();
-        const inject = (hay: string, needle: string, value: string) =>
-          hay.replace(needle, () => value);
-
-        // jsonEsc: produces a JS string literal safe to drop into an inline
-        // <script>. `JSON.stringify` doesn't escape `</script>` or U+2028/2029
-        // line separators, so we patch those manually.
-        const jsonEsc = (s: string) =>
-          JSON.stringify(s)
-            .replace(/<\//g, "<\\/")
-            .replace(/\u2028/g, "\\u2028")
-            .replace(/\u2029/g, "\\u2029");
-
-        let html = template;
-        html = inject(html, '"__CLIP_NAME__"', jsonEsc(clip.name));
-
-        // Serve the dialog over http://localhost so the webview accepts ES modules etc
- 
-        const server = await startDialogServer(dialogDir);
-        server.setIndexHtml(html);
-
-        let resultJson: string;
-        try {
-          resultJson = await context.ui.showModalDialog(server.url, 840, 540);
-        } finally {
-          await server.close();
-        }
-
-        if (!resultJson) {
-          // cancel
-          return;
-        }
-        let result: DialogResult;
-        try {
-          result = JSON.parse(resultJson) as DialogResult;
-        } catch {
-          await showErrorDialog(context, "Dialog returned malformed result.");
-          return;
-        }
-
-        // should now have a successfully parsed JSON result in 'result'
-        console.log(`***** with`, result, JSON.stringify(result), `\n`);
-
-      } catch (err) {
-        console.error("[paulstretch] command failed:", err);
-        const message =
-          err instanceof Error
-            ? `${err.message}\n${err.stack ?? ""}`
-            : err === undefined
-              ? "(unknown error — caught undefined)"
-              : typeof err === "object"
-                ? JSON.stringify(err, null, 2)
-                : String(err);
-        try {
-          await showErrorDialog(context, message);
-        } catch {
-          /* ignore */
-        }
+        resultJson = await context.ui.showModalDialog(server.url, 840, 540);
+      } finally {
+        await server.close();
       }
-    },
-  );
+
+      if (!resultJson) {
+        // cancel
+        return;
+      }
+      let result: DialogResult;
+      try {
+        result = JSON.parse(resultJson) as DialogResult;
+      } catch {
+        await showErrorDialog(context, "Dialog returned malformed result.");
+        return;
+      }
+
+      // should now have a successfully parsed JSON result in 'result'
+      console.log(`***** with`, result, JSON.stringify(result), `\n`);
+    } catch (err) {
+      console.error("[pinch] command failed:", err);
+      const message =
+        err instanceof Error
+          ? `${err.message}\n${err.stack ?? ""}`
+          : err === undefined
+            ? "(unknown error — caught undefined)"
+            : typeof err === "object"
+              ? JSON.stringify(err, null, 2)
+              : String(err);
+      try {
+        await showErrorDialog(context, message);
+      } catch {
+        /* ignore */
+      }
+    }
+  });
 
   context.ui.registerContextMenuAction(
-    // "AudioTrack.ArrangementSelection",
-    // "Stretch",
-    // "paulstretch.process",
-        "MidiClip",
+    "MidiClip",
     "Open Pinch",
-    "paulstretch.process",
+    "pinch.process",
   );
 }
 

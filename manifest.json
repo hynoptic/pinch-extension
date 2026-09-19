@@ -1,6 +1,6 @@
 {
-    "name": "Paulstretch",
-    "author": "Oli Larkin",
+    "name": "Pinch",
+    "author": "Hynoptic",
     "entry": "dist/extension.js",
     "version": "1.0.0",
     "minimumApiVersion": "1.0.0"

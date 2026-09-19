@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build + package paulstretch into:
+ * Build + package into:
  *   - <Name>-<version>.ablx          installable extension (all runtime assets)
  *
  * Includes the Vite-built dialog tree (dist/dialog) on top of the default

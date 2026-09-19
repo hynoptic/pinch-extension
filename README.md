@@ -1,23 +1,7 @@
-# Paulstretch For Live — Ableton Live extension
-
-*This is an experimental program for extreme stretching the audio.*
-
-![The Paulstretch For Live dialog, showing the Parameters tab with the stretch multiplier envelope editor](docs/screenshot.png)
-
-Embeds [libpaulstretch](https://github.com/olilarkin/libpaulstretch) — a modern
-C++ rewrite of [paulstretch](https://hypermammut.sourceforge.net/paulstretch/) —
-as an Ableton Live extension.
-
-See also [Paulstretch For Web](https://github.com/olilarkin/paulstretch-for-web)
-
-## Just want to use it?
+# Pinch — Ableton Live extension
 
 Extensions are a new feature in Ableton Live 12.4.5 (Suite), currently in beta.
 They won't work in previous versions. 
-
-Grab the prebuilt `Paulstretch-<version>.ablx` from this repo's
-[Releases](../../releases) and install it into Live (Preferences →
-Extensions). You don't need any of the build steps below.
 
 ## Building from source
 
@@ -66,7 +50,7 @@ npm run install:all   # installs the host, then src/dialog
 
 ```sh
 npm run build       # vite-build the dialog + esbuild the host
-npm run package     # produce Paulstretch-<version>.ablx
+npm run package     # produce Pinch-<version>.ablx
 ```
 
 ### 4. Run
@@ -90,8 +74,6 @@ enabled in Preferences → Extensions).
 
 ## License
 
-Paulstretch For Live is licensed under the GPL v2.0
-
 The bundled dialog ships two fonts, each under the
 [SIL Open Font License 1.1](https://openfontlicense.org). Their license texts
 are included both in this repo and inside every `.ablx`, under
@@ -100,11 +82,4 @@ are included both in this repo and inside every `.ablx`, under
 - **Inter** — © The Inter Project Authors — `Inter-LICENSE.txt`
 - **JetBrains Mono** — © The JetBrains Mono Project Authors — `JetBrainsMono-LICENSE.txt`
 
-[libpaulstretch](https://github.com/olilarkin/libpaulstretch) is also GPL v2.0
-
 ## Credits
-
-Paulstretch For Live. Copyright [Oliver Larkin](https://olilarkin.com) 2026.
-
-Based on [Paulstretch](https://hypermammut.sourceforge.net/paulstretch/) by
-[Nasca Octavian Paul](https://www.paulnasca.com/).
