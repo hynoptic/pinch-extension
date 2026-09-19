@@ -1,10 +1,3 @@
-// Bridges WebView console output + uncaught errors back to the extension host
-// over the loopback HTTP server, so they land in `ExtensionHost.txt`. Live's
-// embedded WebView (WebKit on macOS, WebView2 on Windows) doesn't expose any
-// devtools, so without this bridge there is no way to see *why* the dialog
-// is stuck — only that it's stuck. Import this module *first* in main.tsx so
-// failures during React mount itself are captured.
-
 function safeStringify(value: unknown): string {
   if (typeof value === 'string') return value;
   if (value === undefined) return 'undefined';
@@ -63,9 +56,6 @@ function installErrorHandlers(): void {
 }
 
 function logEnvironment(): void {
-  // Useful one-shot context dump so we know what we're dealing with on the
-  // remote machine. SAB / crossOriginIsolated tell us whether the engine's
-  // AudioWorklet path is even viable.
   post('info', [
     'dialog boot:',
     `ua=${navigator.userAgent}`,
@@ -75,8 +65,7 @@ function logEnvironment(): void {
   ]);
 }
 
-// if (LOG_URL) {
-  installConsoleBridge();
-  installErrorHandlers();
-  logEnvironment();
-// }
+installConsoleBridge();
+installErrorHandlers();
+logEnvironment();
+

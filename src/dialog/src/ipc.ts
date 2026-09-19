@@ -1,8 +1,3 @@
-// Dialog → host IPC. Ableton exposes one of two channels depending on the
-// host webview (WebKit on macOS, WebView2 on Windows). Both accept the same
-// `{ method, params }` payload; the host parses `close_and_send` and returns
-// the params[0] string as the dialog's result Promise value.
-
 interface HostBridge {
   postMessage(msg: unknown): void;
 }
